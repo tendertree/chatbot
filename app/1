@@ -1,6 +1,7 @@
-import { ChartContainer, ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import Image from "next/image";
 import { Bar, BarChart } from "recharts";
+
 export default function Home() {
     const chartData = [
         { month: "January", desktop: 186, mobile: 80 },
@@ -10,22 +11,13 @@ export default function Home() {
         { month: "May", desktop: 209, mobile: 130 },
         { month: "June", desktop: 214, mobile: 140 },
     ]
-    const chartConfig = {
-        desktop: {
-            label: "Desktop",
-            color: "#2563eb",
-        },
-        mobile: {
-            label: "Mobile",
-            color: "#60a5fa",
-        },
-    } satisfies ChartConfig
     return (
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
             <div>
-                <ChartContainer config={chartConfig}>
-                    <BarChart data={chartData}>
+                <ChartContainer>
+                    <BarChart data={charData}>
                         <Bar dataKey="value" />
+                        <ChartTooltip content={<ChartTooltipContent />} />
                     </BarChart>
                 </ChartContainer>
 
