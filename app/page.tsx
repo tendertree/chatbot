@@ -1,6 +1,6 @@
 import { ChartContainer, ChartConfig } from "@/components/ui/chart";
-import Image from "next/image";
 import { Bar, BarChart } from "recharts";
+import Image from "next/image";
 export default function Home() {
     const chartData = [
         { month: "January", desktop: 186, mobile: 80 },
@@ -22,14 +22,7 @@ export default function Home() {
     } satisfies ChartConfig
     return (
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
-            <div>
-                <ChartContainer config={chartConfig}>
-                    <BarChart data={chartData}>
-                        <Bar dataKey="value" />
-                    </BarChart>
-                </ChartContainer>
+            <div>hello owld</div>
 
-            </div>
-        </main>
-    );
+        </main>)
 }
