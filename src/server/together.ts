@@ -1,7 +1,7 @@
+//202
 import Together from 'together-ai';
 import { TogetherLLM, Settings, Document, VectorStoreIndex } from "llamaindex";
 import supabase from './supabase';
-
 interface TogetherChatCompletion {
     choices: {
         message: {
@@ -9,19 +9,19 @@ interface TogetherChatCompletion {
         };
     }[];
 }
-
-export class TogetherManager {
+export default class TogetherManager {
     private together: Together;
     private llm: TogetherLLM;
     private _VectorStoreIndex!: VectorStoreIndex;
-    constructor(apiKey: string) {
-        this.together = new Together({ apiKey: process.env['TOGETHERKEY'], });
+    constructor() {
+        this.together = new Together({ apiKey: process.env.TOGETHER_API_KEY });
         this.llm = new TogetherLLM({
-            apiKey: process.env.TOGETHER_KEY
+            apiKey: process.env.TOGETHER_API_KEY
         });
         Settings.llm = this.llm;
-    }
+        console.log("Together manager conustructed");
 
+    }
     async getSinglePrompt(query: string): Promise<string> {
         const response = await this.together.chat.completions.create({
             model: 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo',
@@ -33,7 +33,6 @@ export class TogetherManager {
         }) as TogetherChatCompletion;
         return response.choices[0].message.content;
     }
-
     async* streamResponse(prompt: string) {
         const stream = await this.together.chat.completions.create({
             model: "meta-llama/Llama-3-8b-chat-hf",
@@ -54,7 +53,7 @@ export class TogetherManager {
             console.log("Index created successfully");
         } catch (error) {
             console.error("Error creating index:", error);
-            throw error; // 에러를 던져서 호출자가 처리할 수 있게 함
+            throw error;
         }
     }
 
@@ -72,11 +71,10 @@ export class TogetherManager {
             return response;
         } catch (error) {
             console.error("Error querying document:", error);
-            throw error; // 에러를 던져서 호출자가 처리할 수 있게 함
+            throw error;
         }
     }
 
-    //통합본 
     async askForDocument(bucketName: string, documentPath: string): Promise<void> {
         try {
             const fileContent = await this.downloadFromSupabase(bucketName, documentPath);
@@ -109,13 +107,5 @@ export class TogetherManager {
         return await data.text();
     }
 }
-
-// 사용 예시
-const apiKey = process.env.TOGETHER_KEY;
-if (!apiKey) {
-    throw new Error("TOGETHER_KEY is not set in environment variables");
-}
-
-const togetherManager = new TogetherManager(apiKey);
 
 
