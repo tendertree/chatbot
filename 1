@@ -1,47 +1,30 @@
-'use client'
+import supabase from "@/src/server/supabase";
+import { TogetherManager } from "@/src/server/together";
 
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { UploadFileAction } from "@/app/actions"
+const TestbucketName = "StudyData"
+const TestdocumentName = "go.pdf"
 
-export default function FileUploader() {
-    const [file, setFile] = useState<File | null>(null)
+const apiKey = process.env.TOGETHER_KEY;
+if (!apiKey) {
+    throw new Error('TOGETHER_KEY is not set in environment variables');
+}
+togetherManager = new TogetherManager(apiKey);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0])
-        }
+export async function GET(request: Request) {
+
+    const apiKey = process.env.TOGETHER_KEY;
+    if (!apiKey) {
+        throw new Error('TOGETHER_KEY is not set in environment variables');
     }
+    togetherManager = new TogetherManager(apiKey);
 
-    const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        if (!file) {
-            alert('Please select a file first')
-            return
-        }
+    await togetherManager.createIndex(bucketName, documentPath);
 
-        const formData = new FormData()
-        formData.append('file', file)
+    // 吏덈Ц ?앹꽦
+    const question = "?꾨? 泥좏븰??硫붿빞?섎뒗 臾댁뾿??二쇱옣?덉뼱?";
 
-        try {
-            const result = await UploadFileAction(formData)
-            console.log('Upload result:', result)
-            alert('File uploaded successfully!')
-        } catch (error) {
-            console.error('Error uploading file:', error)
-            alert(`Error uploading file: ${error instanceof Error ? error.message : 'Unknown error'}`)
-        }
-    }
+    // 臾몄꽌 荑쇰━
+    const { response, sourceNodes } = await togetherManager.queryDocument(question);
 
-    return (
-        <form onSubmit={handleUpload}>
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="picture">Upload PDF</Label>
-                <Input id="picture" type="file" onChange={handleFileChange} />
-                <Button type="submit" disabled={!file}>Upload</Button>
-            </div>
-        </form>
-    )
+    return Response.json(node);
 }
