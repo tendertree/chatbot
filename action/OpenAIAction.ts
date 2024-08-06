@@ -20,3 +20,4 @@ export async function queryDocument(question: string) {
         return { success: false, message: 'Failed to query document' };
     }
 }
+
