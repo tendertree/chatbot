@@ -27,6 +27,12 @@ export async function UploadFile(file: File) {
     return data;
 }
 
+export async function AskForDocument(bucketName: string, documentpath: string) {
+    const bucket = bucketName;
+    const filePath = documentpath;
+    const fileContent = await downloadFromSupabase(bucket, filePath);
+    const document = new Document({ text: fileContent, id_: filePath });
+}
 
 async function downloadFromSupabase(bucket: string, path: string) {
     const { data, error } = await supabase
@@ -40,3 +46,6 @@ async function downloadFromSupabase(bucket: string, path: string) {
 
     return await data.text();
 }
+
+
+
