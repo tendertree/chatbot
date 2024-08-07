@@ -14,19 +14,26 @@ export default function FileUploader() {
             setFile(e.target.files[0])
         }
     }
-
     const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!file) {
             alert('Please select a file first')
             return
         }
-
         const formData = new FormData()
         formData.append('file', file)
 
         try {
-            const result = await UploadFileAction(formData)
+            const response = await fetch('/api/file', {
+                method: 'POST',
+                body: formData,
+            })
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`)
+            }
+
+            const result = await response.json()
             console.log('Upload result:', result)
             alert('File uploaded successfully!')
         } catch (error) {

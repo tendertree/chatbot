@@ -1,45 +1,70 @@
-import { readFile } from "fs/promises";
-import { NextRequest, NextResponse } from "next/server";
-import path from "path";
+import { NextRequest, NextResponse } from 'next/server';
+import supabase from '@/src/server/supabase';
+import { v4 as uuidv4 } from 'uuid';
 
-/**
- * This API is to get file data from allowed folders
- * It receives path slug and response file data like serve static file
- */
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { slug: string[] } },
-) {
-  const slug = params.slug;
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
 
-  if (!slug) {
-    return NextResponse.json({ detail: "Missing file slug" }, { status: 400 });
-  }
+export async function POST(request: NextRequest) {
+    try {
+        const formData = await request.formData();
+        const file = formData.get('file') as File;
 
-  if (slug.includes("..") || path.isAbsolute(path.join(...slug))) {
-    return NextResponse.json({ detail: "Invalid file path" }, { status: 400 });
-  }
+        if (!file) {
+            return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+        }
 
-  const [folder, ...pathTofile] = params.slug; // data, file.pdf
-  const allowedFolders = ["data", "output"];
+        console.log('Original file details:', file.name, file.type, file.size);
 
-  if (!allowedFolders.includes(folder)) {
-    return NextResponse.json({ detail: "No permission" }, { status: 400 });
-  }
+        if (!isAllowedFileType(file)) {
+            return NextResponse.json({ error: 'Image files are not allowed' }, { status: 400 });
+        }
 
-  try {
-    const filePath = path.join(process.cwd(), folder, path.join(...pathTofile));
-    const blob = await readFile(filePath);
+        const sanitizedFileName = sanitizeFilename(file.name);
+        console.log('Sanitized file name:', sanitizedFileName);
 
-    return new NextResponse(blob, {
-      status: 200,
-      statusText: "OK",
-      headers: {
-        "Content-Length": blob.byteLength.toString(),
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ detail: "File not found" }, { status: 404 });
-  }
+        const fileName = `${Date.now()}_${sanitizedFileName}`;
+        console.log('Final file name for upload:', fileName);
+
+        const fileBuffer = await file.arrayBuffer();
+
+        const { data, error } = await supabase.storage
+            .from('StudyData')
+            .upload(fileName, fileBuffer);
+
+        if (error) {
+            console.error('Supabase upload error:', error);
+            return NextResponse.json({ error: `Failed to upload file: ${error.message}` }, { status: 500 });
+        }
+
+        console.log('Upload successful:', data);
+        return NextResponse.json(data);
+    } catch (error) {
+        console.error('Unhandled error in upload:', error);
+        return NextResponse.json({ error: 'An unknown error occurred during file upload' }, { status: 500 });
+    }
+}
+
+function isAllowedFileType(file: File): boolean {
+    const imageTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'image/svg+xml',
+        'image/bmp',
+        'image/tiff'
+    ];
+    return !imageTypes.includes(file.type);
+}
+
+function sanitizeFilename(filename: string): string {
+    const parts = filename.split('.');
+    const ext = parts.pop();
+    const name = parts.join('.');
+    const sanitized = name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    return `${sanitized}_${uuidv4()}.${ext}`;
 }

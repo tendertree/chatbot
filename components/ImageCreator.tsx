@@ -1,7 +1,13 @@
 'use client'
 
 import { useState } from 'react';
-import { useQuery } from 'react-query';
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+    QueryClient,
+    QueryClientProvider,
+} from '@tanstack/react-query'
 import axios from 'axios';
 
 const TarotCard = () => {

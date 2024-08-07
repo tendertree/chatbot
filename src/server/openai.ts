@@ -14,7 +14,7 @@ export default class OpenAIManager {
         Settings.llm = new OpenAI({
             model: "gpt-3.5-turbo",
             temperature: 0,
-            apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
+            apiKey: process.env.OPENAI_API_KEY
         });
         // Settings.embedModel = new HuggingFaceEmbedding({
         //     modelType: "BAAI/bge-small-en-v1.5",
